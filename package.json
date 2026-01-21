@@ -1,0 +1,61 @@
+{
+  "name": "lecture-docs-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "AI-powered handwritten notes to documentation converter",
+  "workspaces": [
+    "frontend",
+    "cli"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:backend\" \"npm run dev:frontend\"",
+    "dev:backend": "cd backend && uvicorn app.main:app --reload --port 8080",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:worker": "cd backend && python -m app.services.job_queue",
+    "build": "npm run build:frontend && npm run build:cli",
+    "build:frontend": "cd frontend && npm run build",
+    "build:cli": "cd cli && npm run build",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:rebuild": "docker-compose down && docker-compose build && docker-compose up -d",
+    "db:migrate": "cd backend && alembic upgrade head",
+    "db:reset": "cd backend && alembic downgrade base && alembic upgrade head",
+    "test": "npm run test:backend && npm run test:frontend",
+    "test:backend": "cd backend && pytest",
+    "test:frontend": "cd frontend && npm run test",
+    "lint": "npm run lint:frontend",
+    "lint:frontend": "cd frontend && npm run lint",
+    "format": "prettier --write \"**/*.{js,jsx,ts,tsx,json,md}\"",
+    "install:all": "npm install && cd frontend && npm install && cd ../cli && npm install",
+    "clean": "rm -rf node_modules frontend/node_modules cli/node_modules frontend/.next cli/dist"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "prettier": "^3.1.1"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0",
+    "python": ">=3.11.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yourusername/lecture-docs.git"
+  },
+  "keywords": [
+    "documentation",
+    "ai",
+    "ocr",
+    "rag",
+    "handwritten-notes",
+    "blockchain-learning",
+    "lecture-notes"
+  ],
+  "author": "Your Name",
+  "license": "MIT",
+  "dependencies": {
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0"
+  }
+}
