@@ -259,8 +259,7 @@ MIT License - see [LICENSE](./LICENSE) file.
 
 ## 📞 Support
 
-- 📧 Email: support@lecturedocs.io
-- 💬 Discord: [Join our community](https://discord.gg/lecturedocs)
+- 📧 Email: anikeshuzumaki@gmail.com
 - 🐛 Issues: [GitHub Issues](https://github.com/uzumaki-ak/lecture-docs/issues)
 - 📖 Docs: [Full Documentation](https://docs.lecturedocs.io)
 
