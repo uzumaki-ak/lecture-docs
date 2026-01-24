@@ -1,0 +1,26 @@
+{
+    "$schema": "https://railway.app/railway.schema.json",
+    "build": {
+      "builder": "NIXPACKS"
+    },
+    "deploy": {
+      "startCommand": "uvicorn app.main:app --host 0.0.0.0 --port $PORT",
+      "restartPolicyType": "ON_FAILURE",
+      "restartPolicyMaxRetries": 10
+    }
+  }
+  ```
+  
+  **`backend/runtime.txt`:**
+  ```
+  python-3.11
+  ```
+  
+  **`backend/.slugignore` (optional, reduces size):**
+  ```
+  *.pyc
+  __pycache__/
+  tests/
+  *.log
+  .env
+  .git/
