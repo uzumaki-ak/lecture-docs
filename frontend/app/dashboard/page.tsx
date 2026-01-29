@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react"; // ADD useEffect
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import { ProjectList } from "@/components/ProjectList";
 import { UploadZone } from "@/components/UploadZone";
@@ -9,20 +10,32 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Search, Filter, FolderPlus } from "lucide-react";
 import { toast } from "sonner";
+import { supabase } from "@/lib/supabase";
 
 export default function DashboardPage() {
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState("");
   const [showUpload, setShowUpload] = useState(false);
   const [filters, setFilters] = useState({
     course: "",
     module: "",
   });
-  const [isClient, setIsClient] = useState(false); // ADD this
+  const [isClient, setIsClient] = useState(false);
 
-  // ADD this useEffect
+  // Check auth and redirect if not logged in
   useEffect(() => {
-    setIsClient(true);
-  }, []);
+    const checkAuth = async () => {
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
+      if (!session) {
+        router.push("/auth/login");
+      } else {
+        setIsClient(true);
+      }
+    };
+    checkAuth();
+  }, [router]);
 
   // Fetch projects
   const {
@@ -84,7 +97,7 @@ export default function DashboardPage() {
     return <div>Loading...</div>;
   }
   console.log("DEBUG - projectsData:", projectsData);
-console.log("DEBUG - filtersData:", filtersData);
+  console.log("DEBUG - filtersData:", filtersData);
 
   return (
     <div className="space-y-8">

@@ -90,6 +90,8 @@ class Settings(BaseSettings):
     
     # Auth
     CLERK_SECRET_KEY: Optional[str] = None
+    SUPABASE_URL: Optional[str] = None
+    SUPABASE_KEY: Optional[str] = None
     JWT_SECRET: str = "change-this-to-a-random-secret-key-in-production"
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 10080  # 7 days

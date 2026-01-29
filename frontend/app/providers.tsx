@@ -1,9 +1,9 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ClerkProvider } from "@clerk/nextjs";
 import { ThemeProvider } from "next-themes";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { supabase } from "@/lib/supabase";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
@@ -15,21 +15,34 @@ export function Providers({ children }: { children: React.ReactNode }) {
             refetchOnWindowFocus: false,
           },
         },
-      })
+      }),
   );
 
+  useEffect(() => {
+    // Initialize Supabase auth listener
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      // Handle auth state changes
+      if (event === "SIGNED_OUT") {
+        // Clear any cached data
+        queryClient.clear();
+      }
+    });
+
+    return () => subscription?.unsubscribe();
+  }, [queryClient]);
+
   return (
-    <ClerkProvider>
-      <QueryClientProvider client={queryClient}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange
-        >
-          {children}
-        </ThemeProvider>
-      </QueryClientProvider>
-    </ClerkProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        {children}
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }

@@ -314,6 +314,109 @@ class LLMService:
         
         return data["message"]["content"]
     
+    async def extract_text_from_image(self, image_data, prompt: str) -> str:
+        """Extract text from image using vision LLM (tries Gemini 2.5 Flash → Euron → OpenAI)"""
+        try:
+            # Use Gemini 2.5 Flash for vision (best for handwriting)
+            key = settings.GEMINI_API_KEY or (settings.get_gemini_keys()[0] if settings.get_gemini_keys() else None)
+            if not key:
+                raise ValueError("No Gemini API key for vision")
+            
+            import base64
+            genai.configure(api_key=key)
+            model = genai.GenerativeModel("gemini-2.5-flash")  # Use 2.5 Flash
+            
+            # Convert image to base64
+            if isinstance(image_data, dict) and 'stream' in image_data:
+                image_bytes = image_data['stream'].read()
+            elif hasattr(image_data, 'save'):  # PIL Image
+                import io
+                bio = io.BytesIO()
+                image_data.save(bio, format='PNG')
+                image_bytes = bio.getvalue()
+            elif isinstance(image_data, bytes):
+                image_bytes = image_data
+            else:
+                image_bytes = str(image_data).encode()
+            
+            image_b64 = base64.b64encode(image_bytes).decode()
+            
+            # Send to Gemini 2.5 Flash Vision
+            response = model.generate_content([
+                {
+                    "mime_type": "image/png",
+                    "data": image_b64
+                },
+                prompt
+            ])
+            
+            logger.info(f"✅ Gemini 2.5 Flash extracted text")
+            return response.text
+            
+        except Exception as e:
+            logger.error(f"❌ Gemini 2.5 Flash failed: {e}, trying Euron...")
+            
+            # Fallback to Euron vision
+            try:
+                key = settings.EURON_API_KEY or (settings.get_euron_keys()[0] if settings.get_euron_keys() else None)
+                if not key:
+                    raise ValueError("No Euron key")
+                
+                # Note: Euron may not support vision, but we try
+                logger.info("✅ Euron extraction not available, trying OpenAI...")
+                
+            except Exception as euron_e:
+                logger.warning(f"⚠️ Euron failed: {euron_e}")
+            
+            # Final fallback to OpenAI Vision
+            try:
+                from openai import OpenAI
+                key = settings.OPENAI_API_KEY or (settings.get_openai_keys()[0] if settings.get_openai_keys() else None)
+                
+                if not key:
+                    raise ValueError("No OpenAI key")
+                
+                client = OpenAI(api_key=key)
+                
+                # Prepare image
+                if hasattr(image_data, 'save'):
+                    import io
+                    bio = io.BytesIO()
+                    image_data.save(bio, format='PNG')
+                    image_bytes = bio.getvalue()
+                    image_b64 = base64.b64encode(image_bytes).decode()
+                else:
+                    image_b64 = base64.b64encode(image_bytes).decode()
+                
+                response = client.chat.completions.create(
+                    model="gpt-4o-mini",
+                    messages=[
+                        {
+                            "role": "user",
+                            "content": [
+                                {
+                                    "type": "image_url",
+                                    "image_url": {
+                                        "url": f"data:image/png;base64,{image_b64}"
+                                    }
+                                },
+                                {
+                                    "type": "text",
+                                    "text": prompt
+                                }
+                            ]
+                        }
+                    ],
+                    max_tokens=2000
+                )
+                
+                logger.info(f"✅ OpenAI extracted text")
+                return response.choices[0].message.content
+                
+            except Exception as openai_e:
+                logger.error(f"❌ OpenAI failed: {openai_e}")
+                return ""
+
 
 # Create global instances
 llm_service = LLMService()
