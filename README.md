@@ -7,6 +7,9 @@ Transform your handwritten lecture notes, PDFs, audio, and code into beautiful, 
 ![Python](https://img.shields.io/badge/python-3.11%2B-blue)
 ![Node](https://img.shields.io/badge/node-18%2B-green)
 
+## demo video: https://www.youtube.com/watch?v=_Iyqe4NJIao
+
+
 ## 🎯 Features
 
 ### Core Capabilities
